@@ -18,10 +18,25 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up Node.js
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
+
+      - name: Install Chrome and ChromeDriver
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y chromium-browser chromium-chromedriver
+          # Check Chrome and driver versions
+          chromium-browser --version
+          chromedriver --version
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run Selenium test
+        run: node tests/test-homepage.js
+
 
       - name: Install dependencies
         run: npm install
