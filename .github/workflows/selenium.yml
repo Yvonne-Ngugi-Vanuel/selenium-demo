@@ -1,52 +1,44 @@
-name: Run Selenium Test
+name: Run Selenium Tests
 
 on:
   push:
     branches: [main]
   pull_request:
     branches: [main]
+  workflow_dispatch:
 
 jobs:
-  selenium-test:
+  selenium-tests:
     runs-on: ubuntu-latest
 
-    strategy:
-      matrix:
-        node-version: [18]
-
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+    - name: Checkout code
+      uses: actions/checkout@v3
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ matrix.node-version }}
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: 18
 
-       - name: Install Google Chrome
+    - name: Install project dependencies
+      run: npm install
+
+    - name: Install Google Chrome
       run: |
-        sudo apt update
-        sudo apt install -y wget unzip xvfb
+        sudo apt-get update
+        sudo apt-get install -y wget unzip xvfb libxi6 libgconf-2-4 libnss3 libxss1 libappindicator1 libindicator7
         wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
-        sudo apt install -y ./google-chrome-stable_current_amd64.deb
+        sudo apt-get install -y ./google-chrome-stable_current_amd64.deb
 
-    - name: Install ChromeDriver
+    - name: Install matching ChromeDriver
       run: |
         CHROME_VERSION=$(google-chrome --version | grep -oP '\d+\.\d+\.\d+')
-        wget https://chromedriver.storage.googleapis.com/`curl -s "https://chromedriver.storage.googleapis.com/LATEST_RELEASE_$CHROME_VERSION"`/chromedriver_linux64.zip
+        DRIVER_VERSION=$(curl -s "https://chromedriver.storage.googleapis.com/LATEST_RELEASE_$CHROME_VERSION")
+        wget https://chromedriver.storage.googleapis.com/${DRIVER_VERSION}/chromedriver_linux64.zip
         unzip chromedriver_linux64.zip
         sudo mv chromedriver /usr/local/bin/
         sudo chmod +x /usr/local/bin/chromedriver
 
-      - name: Install dependencies
-        run: npm install
-
-      - name: Run Selenium test
-        run: node tests/test-homepage.js
-
-
-      - name: Install dependencies
-        run: npm install
-
-      - name: Run Selenium test
-        run: node tests/test-homepage.js
+    - name: Run Selenium Tests with xvfb (headless)
+      run: |
+        xvfb-run --auto-servernum --server-args='-screen 0 1024x768x24' node tests/test-homepage.js
