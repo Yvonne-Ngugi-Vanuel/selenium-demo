@@ -7,7 +7,7 @@ const chrome = require('selenium-webdriver/chrome');
     .setChromeOptions(new chrome.Options().headless())
     .build();
 
-  await driver.get('http://example.com'); // your target
-  // add your test logic
+  await driver.get('https://example.com'); // or localhost, etc.
+  // add your test logic/assertions here
   await driver.quit();
 })();
