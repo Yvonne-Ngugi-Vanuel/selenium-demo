@@ -1,0 +1,30 @@
+name: Run Selenium Test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  selenium-test:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [18]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run Selenium test
+        run: node tests/test-homepage.js
